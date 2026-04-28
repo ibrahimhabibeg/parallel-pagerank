@@ -67,7 +67,7 @@ def pagerank(A, alpha=0.85, max_iter=100, tol=1e-6, number_of_workers=cpu_count(
     for w in workers:
         w.start()
 
-    for iteration in range(max_iter):
+    for _ in range(max_iter):
         for q in input_queues:
             q.put(v)
 
@@ -91,4 +91,37 @@ def pagerank(A, alpha=0.85, max_iter=100, tol=1e-6, number_of_workers=cpu_count(
     for w in workers:
         w.join()
 
+    return v
+
+
+def pagerank_sequential_step(M, v, alpha):
+    N = M.shape[0]
+    new_v = np.zeros(N)
+    for i in range(N):
+        row_start = M.indptr[i]
+        row_end = M.indptr[i + 1]
+        if row_start < row_end:
+            row_indices = M.indices[row_start:row_end]
+            row_data = M.data[row_start:row_end]
+            new_v[i] = np.sum(row_data * v[row_indices])
+    new_v = alpha * new_v + (1 - alpha) / N
+    return new_v
+
+
+def pagerank_sequential(A, alpha=0.85, max_iter=100, tol=1e-6):
+    out_degrees = np.array(A.sum(axis=0)).flatten()
+    deadends = np.where(out_degrees == 0)[0]
+
+    M = create_markov_matrix(A)
+    N = M.shape[0]
+    v = np.ones(N) / N
+    for _ in range(max_iter):
+        new_v = pagerank_sequential_step(M, v, alpha)
+        new_v += alpha * v[deadends].sum() / N
+        
+        diff_norm = np.sqrt(np.sum((new_v - v) ** 2))
+        if diff_norm < tol:
+            break
+        
+        v = new_v
     return v
