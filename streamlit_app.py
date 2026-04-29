@@ -62,12 +62,14 @@ def handle_button_click():
     st.session_state["are_values_computed"] = False
     st.session_state["computed_values"] = {}
 
+
 def handle_damping_factor_change():
     st.session_state["damping_factor"] = st.session_state["damping_factor_slider"]
     st.session_state["show_algorithm_section"] = False
     st.session_state["is_running_algorithm"] = False
     st.session_state["are_values_computed"] = False
     st.session_state["computed_values"] = {}
+
 
 def render_algorithm_run_section():
     st.header("Step 2: Run PageRank")
@@ -114,9 +116,19 @@ def render_results_section_from_computed_values():
     cols[1].subheader("Sequential PageRank")
 
     with cols[0]:
-        st.metric("Running Time (seconds)", f"{parallel_running_time:.2f} seconds")
+        st.metric(
+            "Running Time (seconds)",
+            f"{parallel_running_time:.2f} seconds",
+            delta=f"{parallel_running_time - sequential_running_time:.2f} seconds",
+            delta_color="inverse",
+        )
     with cols[1]:
-        st.metric("Running Time (seconds)", f"{sequential_running_time:.2f} seconds")
+        st.metric(
+            "Running Time (seconds)",
+            f"{sequential_running_time:.2f} seconds",
+            delta=f"{sequential_running_time - parallel_running_time:.2f} seconds",
+            delta_color="inverse",
+        )
 
     cols[0].metric("Speedup", f"{sequential_running_time / parallel_running_time:.2f}x")
     cols[1].metric(
@@ -152,10 +164,12 @@ def render_results_section_from_computed_values():
 
 
 def render_results_section():
+    st.header("Step 3: View Results")
+
     if st.session_state["are_values_computed"]:
         render_results_section_from_computed_values()
         return
-    st.header("Step 3: View Results")
+
     st.write("After running PageRank, the results will be displayed here.")
     number_of_processes = cpu_count()
     st.write(f"Running with **{number_of_processes}** processes for parallel PageRank.")
@@ -169,6 +183,8 @@ def render_results_section():
     cols = st.columns(2)
     cols[0].subheader("Parallel PageRank")
     cols[1].subheader("Sequential PageRank")
+    parallel_metrics_placeholder = cols[0].empty()
+    sequential_metrics_placeholder = cols[1].empty()
 
     with cols[0]:
         with st.spinner("Wait for it...", show_time=True):
@@ -180,7 +196,9 @@ def render_results_section():
             )
             end_time = time.time()
             parallel_running_time = end_time - start_time
-        st.metric("Running Time (seconds)", f"{parallel_running_time:.2f} seconds")
+        parallel_metrics_placeholder.metric(
+            "Running Time (seconds)", f"{parallel_running_time:.2f} seconds"
+        )
     with cols[1]:
         with st.spinner("Wait for it...", show_time=True):
             start_time = time.time()
@@ -190,7 +208,22 @@ def render_results_section():
             )
             end_time = time.time()
             sequential_running_time = end_time - start_time
-        st.metric("Running Time (seconds)", f"{sequential_running_time:.2f} seconds")
+        sequential_metrics_placeholder.metric(
+            "Running Time (seconds)", f"{sequential_running_time:.2f} seconds"
+        )
+
+    parallel_metrics_placeholder.metric(
+        "Running Time (seconds)",
+        f"{parallel_running_time:.2f} seconds",
+        delta=f"{parallel_running_time - sequential_running_time:.2f} seconds",
+        delta_color="inverse",
+    )
+    sequential_metrics_placeholder.metric(
+        "Running Time (seconds)",
+        f"{sequential_running_time:.2f} seconds",
+        delta=f"{sequential_running_time - parallel_running_time:.2f} seconds",
+        delta_color="inverse",
+    )
 
     cols[0].metric("Speedup", f"{sequential_running_time / parallel_running_time:.2f}x")
     cols[1].metric(
@@ -252,8 +285,6 @@ def render_results_section():
     progress_info.empty()
     progress_bar.empty()
 
-    st.balloons()
-    time.sleep(1.5)
     st.session_state["computed_values"] = {
         "parallel_results": parallel_results,
         "sequential_results": sequential_results,
