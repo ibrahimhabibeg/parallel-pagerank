@@ -31,12 +31,12 @@ def render_dataset_section():
     st.header("Step 1: Dataset Selection")
     st.write("Select a dataset to run PageRank on.")
     st.subheader("Available Datasets")
-    st.write("""Four datasets from Stanford's [SNAP](https://snap.stanford.edu/data/index.html) project are available for selection:
+    st.write("""Four datasets from Stanford's [SNAP](https://snap.stanford.edu/data/index.html) (Leskovec & Krevl, 2014) project are available for selection:
 
-- **web-Google**: Nodes represent web pages and directed edges represent hyperlinks between them. Released in 2002 by Google as a part of Google Programming Contest.
-- **web-BerkStan**: Nodes represent pages from berkely.edu and stanford.edu domains and directed edges represent hyperlinks between them.
-- **web-Stanford**: Nodes represent pages from Stanford University (stanford.edu) and directed edges represent hyperlinks between them.
-- **web-NotreDame**: Nodes represent pages from University of Notre Dame (domain nd.edu) and directed edges represent hyperlinks between them.
+- **web-Google**: Nodes represent web pages and directed edges represent hyperlinks between them. Released in 2002 by Google as a part of Google Programming Contest. (Leskovec et al., 2008; Google, 2002)
+- **web-BerkStan**: Nodes represent pages from berkely.edu and stanford.edu domains and directed edges represent hyperlinks between them. (Leskovec et al., 2008)
+- **web-Stanford**: Nodes represent pages from Stanford University (stanford.edu) and directed edges represent hyperlinks between them. (Leskovec et al., 2008)
+- **web-NotreDame**: Nodes represent pages from University of Notre Dame (domain nd.edu) and directed edges represent hyperlinks between them. (Albert et al., 1999)
     """)
 
     st.selectbox(
@@ -297,12 +297,47 @@ def render_results_section():
     st.session_state["are_values_computed"] = True
     st.rerun()
 
+def render_info_section():
+    st.title("Parallel PageRank")
+    
+    st.write("""
+    This app is the submission for the course project for the course Parallel Programming (CSC 304) at the Suez Canal University in the spring semester of 2026.
+    
+    This app implements a $O(|V| + |E|)$ algorithm for computing the PageRank (Page et al., 1999) of a graph both sequentially and in parallel using Python's multiprocessing module.
+    The app compares the running time of the parallel and sequential implementations and shows the speedup and efficiency of the parallel implementation for different number of processes.
+    
+    This GUI is built using Streamlit and allows the user to run the algorithm on the Web graphs datasets from Stanford's SNAP project (Leskovec & Krevl, 2014).
+    
+    The code can be found in the repo [ibrahimhabibeg/parallel-pagerank](https://github.com/ibrahimhabibeg/parallel-pagerank)
+    """)
+    
+    columns = st.columns(2)
+    with columns[0]:
+        st.metric("Developer", "[Ibrahim Habib](https://ibrahimhabib.me)")
+        st.metric("GitHub Repository", "[parallel-pagerank](https://github.com/ibrahimhabibeg/parallel-pagerank)")
+    with columns[1]:
+        st.metric("Course Instructor", "Dr. Mohamed Khamis")
+        st.metric("Course TA", "Eng. Amro Medhat")
+    
+def render_refrences_section():
+    st.header("References")
+    st.write("""
+Albert, R., Jeong, H., & Barabási, A.-L. (1999). Diameter of the World-Wide Web. Nature, 401(6749), 130–131. https://doi.org/10.1038/43601
+
+Google. (2002). Google Programming Contest.
+
+Leskovec, J., & Krevl, A. (2014, June). SNAP Datasets: Stanford Large Network Dataset Collection. http://snap.stanford.edu/data
+
+Leskovec, J., Lang, K. J., Dasgupta, A., & Mahoney, M. W. (2008). Community Structure in Large Networks: Natural Cluster Sizes and the Absence of Large Well-Defined Clusters. Internet Mathematics, 6, 123–129.
+
+Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). The PageRank Citation Ranking: Bringing Order to the Web. The Web Conference. https://api.semanticscholar.org/CorpusID:1508503
+    """)
 
 def run_streamlit_app():
     init_state()
 
     st.set_page_config(page_title="Parallel PageRank")
-    st.title("Parallel PageRank")
+    render_info_section()
     st.divider()
     render_dataset_section()
     st.divider()
@@ -310,6 +345,8 @@ def run_streamlit_app():
     st.divider()
     if st.session_state["show_algorithm_section"]:
         render_results_section()
+        st.divider()
+    render_refrences_section()
 
 
 def download_datasets():
