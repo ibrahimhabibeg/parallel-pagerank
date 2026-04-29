@@ -13,11 +13,8 @@ jobs:
           fetch-depth: 0
           lfs: true
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-
-      - name: Compile requirements.txt
-        run: uv export --format requirements-txt --no-hashes > requirements.txt
+      - name: Create requirements.txt from pyproject.toml
+        run: python3 -c 'import tomllib; print("\n".join(tomllib.load(open("pyproject.toml", "rb")).get("project", {}).get("dependencies", [])))' > requirements.txt
 
       - name: Push to HF
         env:
