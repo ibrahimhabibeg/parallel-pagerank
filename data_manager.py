@@ -1,7 +1,5 @@
-import asyncio
 import os
-import aiohttp
-import aiofiles
+import requests
 import gzip
 import pandas as pd
 from scipy.sparse import csr_array
@@ -21,38 +19,45 @@ dataset_file_name = {
     "web-NotreDame": "web-NotreDame.txt",
 }
 
+dataset_number_unique_nodes = {
+    "web-Google": 875_713,
+    "web-BerkStan": 685_230,
+    "web-Stanford": 281_903,
+    "web-NotreDame": 325_729,
+}
+
+dataset_number_edges = {
+    "web-Google": 5_105_039,
+    "web-BerkStan": 7_600_595,
+    "web-Stanford": 2_312_497,
+    "web-NotreDame": 1_497_134,
+}
+
+supported_datasets = list(dataset_link.keys())
+
 DATA_FOLDER = "data"
 if not os.path.exists(DATA_FOLDER):
     os.makedirs(DATA_FOLDER)
+
 
 class SnapDataManager:
     def __init__(self, dataset_name):
         assert dataset_name in dataset_link, f"Dataset '{dataset_name}' not supported."
         self.dataset_name = dataset_name
         self.dataset_url = dataset_link[dataset_name]
-        self.dataset_file_path = os.path.join(DATA_FOLDER, dataset_file_name[dataset_name])
-        self.download_thread = None
+        self.dataset_file_path = os.path.join(
+            DATA_FOLDER, dataset_file_name[dataset_name]
+        )
 
-
-    async def _download_dataset_task(self):
+    def download_dataset(self):
         if os.path.exists(self.dataset_file_path):
             return
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.dataset_url) as response:
-                response.raise_for_status()
-                compressed_data = await response.read()
-                decompressed_data = gzip.decompress(compressed_data)
-                async with aiofiles.open(self.dataset_file_path, "wb") as f_out:
-                    await f_out.write(decompressed_data)
-
-    def download_dataset(self):
-        if self.download_thread is None or not self.download_thread.done():
-            self.download_thread = asyncio.create_task(self._download_dataset_task())
-
-    async def wait_for_download(self):
-        if self.download_thread is not None:
-            await self.download_thread
+        response = requests.get(self.dataset_url)
+        response.raise_for_status()
+        decompressed_data = gzip.decompress(response.content)
+        with open(self.dataset_file_path, "wb") as f_out:
+            f_out.write(decompressed_data)
 
     def get_sparse_matrix(self):
         df = pd.read_csv(
@@ -69,6 +74,12 @@ class SnapDataManager:
             (weights, (df["source"], df["target"])), shape=(num_nodes, num_nodes)
         )
         return adjacency_matrix
+
+    def get_number_of_nodes(self):
+        return dataset_number_unique_nodes[self.dataset_name]
+
+    def get_number_of_edges(self):
+        return dataset_number_edges[self.dataset_name]
 
 
 data_managers = {name: SnapDataManager(name) for name in dataset_link.keys()}

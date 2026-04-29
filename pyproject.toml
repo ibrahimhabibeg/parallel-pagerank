@@ -7,10 +7,13 @@ requires-python = ">=3.11"
 dependencies = [
     "aiofiles>=25.1.0",
     "aiohttp>=3.13.5",
+    "altair>=6.1.0",
     "ipykernel>=7.2.0",
     "matplotlib>=3.10.9",
     "numpy>=2.4.4",
     "pandas>=3.0.2",
+    "plotly>=6.7.0",
     "requests>=2.33.1",
     "scipy>=1.17.1",
+    "streamlit>=1.56.0",
 ]
