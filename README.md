@@ -1,13 +1,3 @@
----
-title: Parallel PageRank
-emoji: 🕸️
-colorFrom: red
-colorTo: yellow
-sdk: streamlit
-app_file: app.py
-pinned: false
----
-
 # Parallel PageRank
 
 <p align="center"><i>Parallel PageRank for Stanford SNAP web graphs</i></p>
