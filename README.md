@@ -18,13 +18,13 @@ $$
 \mathbf{v}_{t+1} = \mathbf{M} \mathbf{v_t}
 $$
 
-Regarding the transition matrix $\mathbf{M}$, $\mathbf{M}_{ij}$ is the probability of transitioning from node $j$ to node $i$. We define the damping factor $\alpha$ (usually set to 0.85) as the probability of transitioning to a neighboring node, and $1-\alpha$ as the probability of transitioning to any random node with equal probability. Given that the surfer will move to a neighboring node, all neighbors of node $j$ will have equal probability of being chosen (because we are assuming a non-weighted graph). If there are no neighbors for node $j$, then the surfer will transition to any random node with equal probability. Hence, we can write $\mathbf{M}_{ij}$ as follows
+Regarding the transition matrix $\mathbf{M}$ , $\mathbf{M_{ij}}$ is the probability of transitioning from node $j$ to node $i$. We define the damping factor $\alpha$ (usually set to 0.85) as the probability of transitioning to a neighboring node, and $1-\alpha$ as the probability of transitioning to any random node with equal probability. Given that the surfer will move to a neighboring node, all neighbors of node $j$ will have equal probability of being chosen (because we are assuming a non-weighted graph). If there are no neighbors for node $j$, then the surfer will transition to any random node with equal probability. Hence, we can write $\mathbf{M}_{ij}$ as follows
 
 $$
 \mathbf{M} = \alpha (\mathbf{A}\mathbf{D}^{-1} + \mathbf{E}) + (1-\alpha) \frac{1}{n} \mathbf{J}_{n}
 $$
 
-where $\mathbf{A}$ is the adjacency matrix of the graph, $\mathbf{D}$ is the diagonal matrix where $\mathbf{D}_{jj}$ is the out-degree of node $j$, $\mathbf{J}_n$ is the $n \times n$ matrix of all ones, and $\mathbf{E}$ is a matrix where $\mathbf{E}_{ij} = \frac{1}{n}$ if node $j$ has no neighbors and $0$ otherwise.
+where $\mathbf{A}$ is the adjacency matrix of the graph, $\mathbf{D}$ is the diagonal matrix where $\mathbf{D_{jj}}$ is the out-degree of node $j$, $\mathbf{J_n}$ is the $n \times n$ matrix of all ones, and $\mathbf{E}$ is a matrix where $\mathbf{E_{ij}} = \frac{1}{n}$ if node $j$ has no neighbors and $0$ otherwise.
 
 ## Algorithm Implementation
 
@@ -32,10 +32,9 @@ $n$ is usually quite large; thus, we cannot possible store $\mathbf{M}$ in memor
 
 $$
 \begin{aligned}
-\mathbf{v}_{t+1} &= \mathbf{M}\mathbf{v}_t \\
-&= \alpha \mathbf{A}\mathbf{D}^{-1} \mathbf{v}_t + \alpha \mathbf{E}\mathbf{v}_t + (1-\alpha) \frac{1}{n} \mathbf{J}_{n} \mathbf{v_t} \\
-&= \alpha \mathbf{A}\mathbf{D}^{-1} \mathbf{v}_t + \alpha \frac{1}{n} (\mathbf{e} \cdot \mathbf{v}_t) + (1-\alpha) \frac{1}{n} \\
-
+  \mathbf{v_{t+1}} &= \mathbf{M}\mathbf{v_t} \\
+  &= \alpha \mathbf{A}\mathbf{D}^{-1} \mathbf{v_t} + \alpha \mathbf{E}\mathbf{v_t} + (1-\alpha) \frac{1}{n} \mathbf{J_n} \mathbf{v_t} \\
+  &= \alpha \mathbf{A}\mathbf{D}^{-1} \mathbf{v_t} + \alpha \frac{1}{n} (\mathbf{e} \cdot \mathbf{v_t}) + (1-\alpha) \frac{1}{n} \\
 \end{aligned}
 $$
 
@@ -43,9 +42,9 @@ where $\mathbf{e}$ is an indicator vector of the nodes with no neighbors and bro
 
 $\mathbf{A}\mathbf{D}^{-1}$ is a sparse matrix; hence, we are able to store it in memory and multiply with it efficiently.
 
-Regarding the parallel implementation, we parallelize the multiplication by splitting the matrix into blocks of rows and multiplying each block with $\mathbf{v}_t$ in a separate process. Finally, we merge all the results together.
+Regarding the parallel implementation, we parallelize the multiplication by splitting the matrix into blocks of rows and multiplying each block with $\mathbf{v_t}$ in a separate process. Finally, we merge all the results together.
 
-We keep moving in the chain until the L2 norm of the difference between $\mathbf{v}_{t+1}$ and $\mathbf{v}_t$ is less than a certain threshold or we reach a maximum number of iterations.
+We keep moving in the chain until the L2 norm of the difference between $\mathbf{v_{t+1}}$ and $\mathbf{v_t}$ is less than a certain threshold or we reach a maximum number of iterations.
 
 ## Running the App Locally
 
