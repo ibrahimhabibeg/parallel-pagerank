@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from data_manager import supported_datasets, get_data_manager
 from threading import Thread
@@ -8,6 +9,10 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 DEFAULT_DATASET = supported_datasets[0]
+
+is_on_huggingface = "SPACE_ID" in os.environ
+number_of_processes = cpu_count() if not is_on_huggingface else 2
+max_processors_to_use_in_graph = min(12, number_of_processes)
 
 
 def init_state():
@@ -133,8 +138,12 @@ def render_results_section_from_computed_values():
     cols[0].metric("Speedup", f"{sequential_running_time / parallel_running_time:.2f}x")
     cols[1].metric(
         "Efficiency",
-        f"{(sequential_running_time / parallel_running_time) / cpu_count():.2f}",
+        f"{(sequential_running_time / parallel_running_time) / number_of_processes:.2f}",
     )
+
+    if is_on_huggingface:
+        render_hf_warning()
+        return
 
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
@@ -163,6 +172,14 @@ def render_results_section_from_computed_values():
     st.plotly_chart(fig, width="stretch")
 
 
+def render_hf_warning():
+    st.warning("""
+    This app is running on Hugging Face Spaces and has limited resources.
+    There is only 2 CPU cores available, so no comparison between different number of processes can be made.
+    Try running the app locally to see the full experience and compare the performance of different number of processes.
+    """)
+
+
 def render_results_section():
     st.header("Step 3: View Results")
 
@@ -171,8 +188,8 @@ def render_results_section():
         return
 
     st.write("After running PageRank, the results will be displayed here.")
-    number_of_processes = cpu_count()
-    st.write(f"Running with **{number_of_processes}** processes for parallel PageRank.")
+
+    st.info(f"Running with **{number_of_processes}** processes for parallel PageRank.")
 
     parallel_results = None
     sequential_results = None
@@ -230,6 +247,21 @@ def render_results_section():
         "Efficiency",
         f"{(sequential_running_time / parallel_running_time) / number_of_processes:.2f}",
     )
+
+    if is_on_huggingface:
+        render_hf_warning()
+        st.session_state["computed_values"] = {
+            "parallel_results": parallel_results,
+            "sequential_results": sequential_results,
+            "parallel_running_time": parallel_running_time,
+            "sequential_running_time": sequential_running_time,
+            "all_process_counts": [number_of_processes],
+            "all_running_times": [parallel_running_time],
+        }
+        st.session_state["is_running_algorithm"] = False
+        st.session_state["are_values_computed"] = True
+        st.rerun()
+        return
 
     progress_info = st.info(
         "Running the algorithm with different number of processes to show the effect on running time..."
@@ -297,9 +329,10 @@ def render_results_section():
     st.session_state["are_values_computed"] = True
     st.rerun()
 
+
 def render_info_section():
     st.title("Parallel PageRank")
-    
+
     st.write("""
     This app is the submission for the course project for the course Parallel Programming (CSC 304) at the Suez Canal University in the spring semester of 2026.
     
@@ -310,15 +343,19 @@ def render_info_section():
     
     The code can be found in the repo [ibrahimhabibeg/parallel-pagerank](https://github.com/ibrahimhabibeg/parallel-pagerank)
     """)
-    
+
     columns = st.columns(2)
     with columns[0]:
         st.metric("Developer", "[Ibrahim Habib](https://ibrahimhabib.me)")
-        st.metric("GitHub Repository", "[parallel-pagerank](https://github.com/ibrahimhabibeg/parallel-pagerank)")
+        st.metric(
+            "GitHub Repository",
+            "[parallel-pagerank](https://github.com/ibrahimhabibeg/parallel-pagerank)",
+        )
     with columns[1]:
         st.metric("Course Instructor", "Dr. Mohamed Khamis")
         st.metric("Course TA", "Eng. Amro Medhat")
-    
+
+
 def render_refrences_section():
     st.header("References")
     st.write("""
@@ -332,6 +369,7 @@ Leskovec, J., Lang, K. J., Dasgupta, A., & Mahoney, M. W. (2008). Community Stru
 
 Page, L., Brin, S., Motwani, R., & Winograd, T. (1999). The PageRank Citation Ranking: Bringing Order to the Web. The Web Conference. https://api.semanticscholar.org/CorpusID:1508503
     """)
+
 
 def run_streamlit_app():
     init_state()
