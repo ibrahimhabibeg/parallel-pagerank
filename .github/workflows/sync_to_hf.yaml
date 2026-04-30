@@ -16,6 +16,11 @@ jobs:
       - name: Create requirements.txt from pyproject.toml
         run: python3 -c 'import tomllib; print("\n".join(tomllib.load(open("pyproject.toml", "rb")).get("project", {}).get("dependencies", [])))' > requirements.txt
 
+      - name: Inject HF Front Matter into README
+        run: |
+          cat hf-space-front-matter.md README.md > temp_readme.md          
+          mv temp_readme.md README.md
+
       - name: Push to HF
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -23,7 +28,7 @@ jobs:
           # Set up a dummy git identity for the GitHub Action bot
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git add requirements.txt
-          git commit -m "Auto-generate requirements.txt for Hugging Face"
+          git add requirements.txt README.md
+          git commit -m "Auto-generate requirements.txt and inject HF front matter"
 
           git push --force https://ibrahimhabibeg:$HF_TOKEN@huggingface.co/spaces/ibrahimhabibeg/parallel-pagerank HEAD:main
