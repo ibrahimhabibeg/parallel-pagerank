@@ -353,7 +353,7 @@ def render_info_section():
         )
     with columns[1]:
         st.metric("Course Instructor", "Dr. Mohamed Khamis")
-        st.metric("Course TA", "Eng. Amro Medhat")
+        st.metric("Course TA", "Eng. Amr Medhat")
 
 
 def render_refrences_section():

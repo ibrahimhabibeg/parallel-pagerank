@@ -71,7 +71,7 @@ uv run streamlit run app.py
 
 ## Acknowledgments
 
-Special thanks to the course instructor Dr. Mohamed Khamis and the TA Eng. Amro Medhat for their guidance throughout the course.
+Special thanks to the course instructor Dr. Mohamed Khamis and the TA Eng. Amr Medhat for their guidance throughout the course.
 
 ## References
 
